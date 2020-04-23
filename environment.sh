@@ -1,6 +1,6 @@
 #! /bin/bash
 
 source /opt/ros/melodic/setup.bash
-source ~/sis_competition_2020/catkin_ws/devel/setup.bash
+source ~/HCC_competition_2020/catkin_ws/devel/setup.bash
 
-echo "sis_competition_2020 environment"
+echo "HCC_competition_2020 environment"
