@@ -2,18 +2,18 @@
 
 <launch>
     <arg name="eth0" default="10.42.0.1" />
-    <arg name="wlo0" default="192.168.50.240" />
+    <arg name="wlan0" default="192.168.50.240" />
 
     <node pkg="bridge" type="bridge.py" name="bridge_to_car" args="$(arg eth0)" output="screen">
         <param name="bridge_type" value="Twist" />
         <param name="bridge_from" value="/teleop/cmd_vel" />
-        <param name="bridge_to" value="/mobile_base/commands/velocity" />
+        <param name="bridge_to" value="/cmd_vel_mux/input/teleop" />
     </node>
 
-    <node pkg="bridge" type="bridge.py" name="bridge_to_pc" args="$(arg wlo0)" output="screen">
-        <param name="bridge_type" value="Image" />
-        <param name="bridge_from" value="/camera/color/rect_raw" />
-        <param name="bridge_to" value="/teleop/image" />
+    <node pkg="bridge" type="bridge.py" name="bridge_to_pc" args="$(arg wlan0)" output="screen">
+        <param name="bridge_type" value="CompressedImage" />
+        <param name="bridge_from" value="/camera/color/image_raw/compressed" />
+        <param name="bridge_to" value="/teleop/image/compressed" />
     </node>
 
 </launch>

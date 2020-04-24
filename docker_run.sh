@@ -27,13 +27,13 @@ docker run -it \
     -e DISPLAY=$DISPLAY \
     -e XAUTHORITY=$XAUTH \
     -v "$XAUTH:$XAUTH" \
-    -v "/home/$USER/sis_competition_2020:/home/sis/sis_competition_2020" \
+    -v "/home/$USER/HCC_competition_2020:/home/sis/HCC_competition_2020" \
     -v "/tmp/.X11-unix:/tmp/.X11-unix" \
     -v "/etc/localtime:/etc/localtime:ro" \
     -v "/dev:/dev" \
     -v "/home/$USER/.bashrc:/home/sis/.bashrc" \
     --user root \
-    --name sis_competition \
+    --name HCC_competition \
     --runtime nvidia \
     --network host \
     --rm \

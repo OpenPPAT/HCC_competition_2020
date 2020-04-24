@@ -23,10 +23,10 @@ class Bridge(object):
 		rospy.loginfo('type %s' % self.bridge_type)
 
 		self.pub_msg = rospy.Publisher(self.to_msg, class_type[self.bridge_type], queue_size=1)
-		self.sub_msg = rospy.Subscriber(self.from_msg, class_type[self.bridge_type], queue_size=1)
+		self.sub_msg = rospy.Subscriber(self.from_msg, class_type[self.bridge_type], self.cb_msg, queue_size=1)
 
-		def cb_msg(msg):
-			self.pub_msg.publish(msg)
+	def cb_msg(self,msg):
+		self.pub_msg.publish(msg)
 
 
 if __name__ == "__main__":
