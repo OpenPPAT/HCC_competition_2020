@@ -8,7 +8,6 @@ import math
 
 def conv_bn(inp, oup, stride, use_batch_norm=True, onnx_compatible=False):
     ReLU = nn.ReLU if onnx_compatible else nn.ReLU6
-
     if use_batch_norm:
         return nn.Sequential(
             nn.Conv2d(inp, oup, 3, stride, 1, bias=False),

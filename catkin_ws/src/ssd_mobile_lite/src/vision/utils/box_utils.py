@@ -1,7 +1,7 @@
 import collections
 import torch
 import itertools
-from typing import List
+#from typing import List
 import math
 
 SSDBoxSizes = collections.namedtuple('SSDBoxSizes', ['min', 'max'])

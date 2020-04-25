@@ -2,7 +2,7 @@
 
 
 import torch
-# from torchvision import transforms
+from torchvision import transforms
 import sys
 ros_path = '/opt/ros/kinetic/lib/python2.7/dist-packages'
 if ros_path in sys.path:
@@ -21,7 +21,15 @@ def intersect(box_a, box_b):
 
 
 def jaccard_numpy(box_a, box_b):
-
+    """Compute the jaccard overlap of two sets of boxes.  The jaccard overlap
+    is simply the intersection over union of two boxes.
+    E.g.:
+    Args:
+        box_a: Multiple bounding boxes, Shape: [num_boxes,4]
+        box_b: Single bounding box, Shape: [4]
+    Return:
+        jaccard overlap: Shape: [box_a.shape[0], box_a.shape[1]]
+    """
     inter = intersect(box_a, box_b)
     area_a = ((box_a[:, 2]-box_a[:, 0]) *
               (box_a[:, 3]-box_a[:, 1]))  # [A,B]

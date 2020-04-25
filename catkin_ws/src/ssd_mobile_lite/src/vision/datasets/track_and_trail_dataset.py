@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import numpy as np
 import logging
 import xml.etree.ElementTree as ET
@@ -5,7 +6,7 @@ import cv2
 import os
 
 
-class SubtDataset:
+class track_and_trail_Dataset:
 
     def __init__(self, root, transform=None, target_transform=None, is_test=False, keep_difficult=False, label_file=None):
         """Dataset for VOC data.
@@ -17,10 +18,10 @@ class SubtDataset:
         self.transform = transform
         self.target_transform = target_transform
         if is_test:
-            image_sets_file = self.root + "ImageSets/Main/test.txt"
+            image_sets_file = self.root + "/test.txt"
         else:
-            image_sets_file = self.root + "ImageSets/Main/trainval.txt"
-        self.ids = SubtDataset._read_image_ids(image_sets_file)
+            image_sets_file = self.root + "/train.txt"
+        self.ids = track_and_trail_Dataset._read_image_ids(image_sets_file)
         self.keep_difficult = keep_difficult
 
         # if the labels file exists, read in the class names
@@ -43,7 +44,7 @@ class SubtDataset:
 
         else:
             logging.info("No labels file, using default VOC classes.")
-            self.class_names = ('BACKGROUND', 'bb_extinguisher', 'bb_drill', 'bb_backpack')
+            self.class_names = ('BACKGROUND', 'husky')
 
 
         self.class_dict = {class_name: i for i, class_name in enumerate(self.class_names)}
@@ -80,13 +81,14 @@ class SubtDataset:
         ids = []
         #image_sets_file = "/home/andyser/data/subt_real/ImageSets/Main/train.txt"
 
-        with open(image_sets_file) as f:
+        with open(image_sets_file, 'rb') as f:
             for line in f:
                 ids.append(line.rstrip())
         return ids
 
     def _get_annotation(self, image_id):
-        annotation_file = self.root + "Annotations/{}.xml".format(image_id)
+        image_id = image_id.decode()
+        annotation_file = self.root + "/Annotations/{}.xml".format(image_id)
         objects = ET.parse(annotation_file).findall("object")
         boxes = []
         labels = []
@@ -123,7 +125,8 @@ class SubtDataset:
                 np.array(is_difficult, dtype=np.uint8))
 
     def _read_image(self, image_id):
-        image_file = self.root + "image/{}.jpg".format(image_id)
+        image_id = image_id.decode()
+        image_file = self.root + "/JPEGImages/{}.jpg".format(image_id)
         image = cv2.imread(str(image_file))
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
