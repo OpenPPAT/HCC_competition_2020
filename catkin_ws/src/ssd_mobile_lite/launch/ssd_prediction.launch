@@ -1,19 +1,7 @@
 <?xml version="1.0" ?>
 <launch>
-  <include file="$(find realsense2_camera)/launch/rs_aligned_depth.launch">
-    <arg name="veh" value="$(arg veh)"/>
-		<arg name="color_width" value="640"/>
-		<arg name="color_height" value="480"/>
-  </include>
+  
+  <node pkg="ssd_mobile_lite" type="bb_ssd_mobile_lite.py" name="bb_ssd_mobile_lite" output="screen">
+  </node>
 
-  <group ns="$(arg veh)">
-      <node pkg="ssd_mobile_lite" type="bb_ssd_mobile_lite.py" name="bb_ssd_mobile_lite" output="screen">
-        <param name="veh" type="str" value="$(arg veh)"/>
-      </node>
-
-      <node pkg="point_cloud" type="pub_arti_pose_ssd" name="pub_arti_pose_ssd" output="screen">
-        <param name="veh" type="str" value="$(arg veh)"/>
-        <remap from="artifact_pose" to="/$(arg veh)/artifact_pose"/>
-      </node>
-  </group>
 </launch>

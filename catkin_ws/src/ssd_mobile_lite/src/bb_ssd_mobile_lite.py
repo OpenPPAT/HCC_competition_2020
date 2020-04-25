@@ -32,7 +32,7 @@ class bb_ssd_mobile_lite(object):
 		model = "v1"
 		r = rospkg.RosPack()
 		path = r.get_path('ssd_mobile_lite')
-		model_name = "Epoch-190-Loss-0.8932.pth"
+		model_name = "Epoch-740-Loss-0.8609.pth"
 		self.prob_threshold = 0.5
 		self.cv_bridge = CvBridge() 
 
