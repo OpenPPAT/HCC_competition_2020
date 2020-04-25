@@ -2,3 +2,6 @@
 devel/
 build/
 .bag
+*.so
+*.pth
+*.pyc
