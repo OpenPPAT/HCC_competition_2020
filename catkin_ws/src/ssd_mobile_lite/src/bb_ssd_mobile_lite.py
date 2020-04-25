@@ -19,7 +19,6 @@ import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
-from bb_pointnet.msg import * 
 import os 
 import message_filters
 #from ssd_mobile_lite.msg import Position
@@ -48,11 +47,12 @@ class bb_ssd_mobile_lite(object):
         elif model == "v1":
             self.network = create_mobilenetv1_ssd(len(self.labels), is_test=True) 
             model_name = "/models/model.pth"
+    
         elif model == "v1_lite":
             self.network = create_mobilenetv1_ssd_lite(len(self.labels), is_test=True) 
             model_name = "/models/model.pth"
 
-        state_dict = torch.load(os.path.join(self.path, model_name))
+        state_dict = torch.load(self.path + model_name)
         self.network.load_state_dict(state_dict)
         DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.network.to(DEVICE)
@@ -62,16 +62,14 @@ class bb_ssd_mobile_lite(object):
             self.predictor = create_mobilenetv1_ssd_lite_predictor(self.network, candidate_size=200, device = DEVICE)
         elif model == "v1": 
             self.predictor = create_mobilenetv1_ssd_predictor(self.network, candidate_size=200, device = DEVICE)
-
+        print("finish load model")
         #### Publisher
-        self.origin = rospy.Publisher('/input', bb_input, queue_size=1) 
         self.image_pub = rospy.Publisher("/predict_img", Image, queue_size = 1)
-        self.mask_pub = rospy.Publisher("/predict_mask", Image, queue_size = 1)
-        self.position = rospy.Publisher("/position", Point32, queue_size = 1)
-        ### msg filter 
-        self.is_compressed = False
 
-        image_sub = rospy.Subscriber('/camera/color/image_raw', Image, self.callback)
+        ### msg filter 
+        self.is_compressed = True
+
+        image_sub = rospy.Subscriber('/camera/color/image_raw/compressed', CompressedImage, self.callback)
 
     def callback(self, img_msg):
         try:
@@ -100,7 +98,6 @@ class bb_ssd_mobile_lite(object):
         image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         time = rospy.get_time()
         boxes, labels, probs = self.predictor.predict(image, 10, self.prob_threshold)
-        print(1./(rospy.get_time() - time))
         for i in range(boxes.size(0)):
             box = boxes[i, :]
             check = True
@@ -116,10 +113,6 @@ class bb_ssd_mobile_lite(object):
                     
                     x = (box[0] + box[2])/2
                     y = (box[1] + box[3])/2
-                    position_msg = Point32()
-                    position_msg.x = int(x)
-                    position_msg.y = int(y)
-                    self.position.publish(position_msg)
 
         return img# , objs
 

@@ -1,14 +1,15 @@
 #! /usr/bin/env python
 import rospy
 import os
-from std_msgs.msg import Int16
+from std_msgs.msg import Int16, Float64
 from sensor_msgs.msg import Image, CompressedImage
 from geometry_msgs.msg import Twist
 import argparse
 
+
 # support forwad type
 class_type = {'Int16': Int16, 'Image': Image,
-              'CompressedImage': CompressedImage, 'Twist': Twist}
+        'CompressedImage': CompressedImage, 'Twist': Twist, 'Float64' : Float64}
 
 
 class Bridge(object):
