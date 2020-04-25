@@ -25,14 +25,12 @@ class Tracking():
     def __init__(self):
         self.node_name = rospy.get_name()
         rospy.loginfo("[%s] Initializing " % (self.node_name))
-        self.ROBOT_NUM = 3
-        self.wavm_labels = ["wamv", ""]
-
+        
         # Image definition
         self.width = 640
         self.height = 480
         self.h_w = 10.
-        self.const_SA = 0.7
+        self.const_SA = 0.4
         self.predict_prob = 0.5
 
         self.pos_ctrl_max = 1
@@ -105,13 +103,9 @@ class Tracking():
     def initialize_PID(self):
         self.pos_control.setSampleTime(1)
         self.ang_control.setSampleTime(1)
-        self.pos_station_control.setSampleTime(1)
-        self.ang_station_control.setSampleTime(1)
 
         self.pos_control.SetPoint = 0.0
         self.ang_control.SetPoint = 0.0
-        self.pos_station_control.SetPoint = 0.0
-        self.ang_station_control.SetPoint = 0.0
 
     def get_goal_angle(self, robot_yaw, robot, goal):
         robot_angle = np.degrees(robot_yaw)

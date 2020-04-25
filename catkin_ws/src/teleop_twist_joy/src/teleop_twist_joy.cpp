@@ -42,9 +42,11 @@ namespace teleop_twist_joy
 struct TeleopTwistJoy::Impl
 {
   void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
+  void trackCallback(const geometry_msgs::Twist::ConstPtr &cmd);
   void sendCmdVelMsg(const sensor_msgs::Joy::ConstPtr &joy_msg, const std::string &which_map);
 
   ros::Subscriber joy_sub;
+  ros::Subscriber track_sub;
   ros::Publisher cmd_vel_pub;
   ros::Publisher tilt_pub;
   ros::Publisher pan_pub;
@@ -52,6 +54,7 @@ struct TeleopTwistJoy::Impl
   int enable_button;
   int enable_turbo_button;
   float tilt,pan;
+  bool pub_auto;
 
   std::map<std::string, int> axis_linear_map;
   std::map<std::string, std::map<std::string, double>> scale_linear_map;
@@ -72,11 +75,14 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle *nh, ros::NodeHandle *nh_param)
   pimpl_ = new Impl;
 
   pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1, true);
-  pimpl_->tilt_pub = nh->advertise<std_msgs::Float64>("tilt/commands", 1, true);
-  pimpl_->pan_pub = nh->advertise<std_msgs::Float64>("pan/commands", 1, true);
+  pimpl_->tilt_pub = nh->advertise<std_msgs::Float64>("tilt/command", 1, true);
+  pimpl_->pan_pub = nh->advertise<std_msgs::Float64>("pan/command", 1, true);
   pimpl_->joy_sub = nh->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
+  pimpl_->track_sub = nh->subscribe<geometry_msgs::Twist>("track_vel", 1, &TeleopTwistJoy::Impl::trackCallback, pimpl_);
+
   pimpl_->tilt = 0;
   pimpl_->pan = 0;
+  pimpl_->pub_auto = false;
 
   nh_param->param<int>("enable_button", pimpl_->enable_button, 0);
   nh_param->param<int>("enable_turbo_button", pimpl_->enable_turbo_button, -1);
@@ -161,6 +167,12 @@ void TeleopTwistJoy::Impl::sendCmdVelMsg(const sensor_msgs::Joy::ConstPtr &joy_m
   sent_disable_msg = false;
 }
 
+void TeleopTwistJoy::Impl::trackCallback(const geometry_msgs::Twist::ConstPtr &cmd_vel){
+  if(pub_auto){
+    cmd_vel_pub.publish(*cmd_vel);
+  }
+}
+
 void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
 {
   if (enable_turbo_button >= 0 &&
@@ -231,6 +243,14 @@ void TeleopTwistJoy::Impl::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg
     p.data = pan;
     pan_pub.publish(p);
   }
+
+  if(joy_msg->buttons[7]){
+    pub_auto = true;
+  }
+  else if(joy_msg->buttons[6]){
+    pub_auto = false;
+  }
+
 }
 
 } // namespace teleop_twist_joy
