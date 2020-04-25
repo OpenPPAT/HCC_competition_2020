@@ -5,4 +5,4 @@ WLAN0_IP=$(ip addr show wlan0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
 
 source ~/HCC_competition_2020/environment.sh
 
-roslaunch bridge bridge.launch eth0:=$ETH0_IP wlo0:=$WLAN0_IP
+roslaunch teleop_twist_joy teleop.launch eth0:=$ETH0_IP wlo0:=$WLAN0_IP

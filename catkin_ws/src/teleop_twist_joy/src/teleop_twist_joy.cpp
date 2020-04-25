@@ -71,9 +71,9 @@ TeleopTwistJoy::TeleopTwistJoy(ros::NodeHandle *nh, ros::NodeHandle *nh_param)
 {
   pimpl_ = new Impl;
 
-  pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel", 1, true);
-  pimpl_->tilt_pub = nh->advertise<std_msgs::Float64>("tilt", 1, true);
-  pimpl_->pan_pub = nh->advertise<std_msgs::Float64>("pan", 1, true);
+  pimpl_->cmd_vel_pub = nh->advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1, true);
+  pimpl_->tilt_pub = nh->advertise<std_msgs::Float64>("tilt/commands", 1, true);
+  pimpl_->pan_pub = nh->advertise<std_msgs::Float64>("pan/commands", 1, true);
   pimpl_->joy_sub = nh->subscribe<sensor_msgs::Joy>("joy", 1, &TeleopTwistJoy::Impl::joyCallback, pimpl_);
   pimpl_->tilt = 0;
   pimpl_->pan = 0;
