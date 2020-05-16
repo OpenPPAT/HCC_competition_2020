@@ -18,6 +18,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <std_srvs/Trigger.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
@@ -64,16 +65,14 @@ class Pc2Grid{
 
   private:
 	Publisher pc_map;
-	
+	Publisher pub_map;
 	Subscriber sub_map;
 
 	PointCloud<PointXYZ>::Ptr depth_cam;
-
 	VoxelGrid<PointXYZ> voxel;
     PassThrough<PointXYZ> passZ;
 
 	sensor_msgs::PointCloud2 ros_cloud_msg;
-
 	tf::StampedTransform transform;
 	Eigen::Matrix4f trans;
 	
