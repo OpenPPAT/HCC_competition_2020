@@ -32,7 +32,7 @@ class bb_ssd_mobile_lite(object):
 		model = "v1"
 		r = rospkg.RosPack()
 		path = r.get_path('ssd_mobile_lite')
-		model_name = "Epoch-740-Loss-0.8609.pth"
+		model_name = "Epoch-190-Loss-0.8932.pth"
 		self.prob_threshold = 0.5
 		self.cv_bridge = CvBridge() 
 
@@ -78,9 +78,11 @@ class bb_ssd_mobile_lite(object):
 		(rows, cols, channels) = cv_image.shape
 		self.width = cols
 		self.height = rows
+                #obj_list = []
 		predict_img, obj_list = self.predict(cv_image)
 		try:
 			self.image_pub.publish(self.cv_bridge.cv2_to_imgmsg(predict_img, "bgr8"))
+			#self.image_pub.publish(self.cv_bridge.cv2_to_imgmsg(cv_image, "bgr8"))
 		except CvBridgeError as e:
 			print(e)
 
