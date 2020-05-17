@@ -25,7 +25,7 @@ class Robot_PID():
 
         rospy.loginfo("[%s] Initializing " % rospy.get_name())
 
-        self.pub_cmd = rospy.Publisher("cmd_vel", Twist, queue_size=1)
+        self.pub_cmd = rospy.Publisher("track_vel", Twist, queue_size=1)
 
         self.pos_control = PID_control("Position")
         self.ang_control = PID_control("Angular")

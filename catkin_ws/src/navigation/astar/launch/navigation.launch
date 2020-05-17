@@ -2,8 +2,8 @@
 
 <launch>
 
-    <node pkg="astar" type="pc2grid" name="pc2grid" output="screen">
-    </node>
+    <!-- <node pkg="astar" type="pc2grid" name="pc2grid" output="screen">
+    </node> -->
 
     <node pkg="astar" type="path_plan" name="plan" output="screen" >
         <remap from="map" to="depthcam_map" />

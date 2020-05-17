@@ -7,36 +7,40 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path, Odometry
 from nav_msgs.srv import GetPlan, GetPlanRequest, GetPlanResponse
 from visualization_msgs.msg import Marker
+import tf
+import numpy as np
 
 
 class Navigation(object):
     def __init__(self):
         rospy.loginfo("Initializing %s" % rospy.get_name())
-        self.end = [[0.1, 2.2],
-                    [4.1, 3.8],
-                    [4.1, 2.2],
-                    [4.1, 0.5]]
+
         self.pursuit = PurePursuit()
         self.pursuit.set_look_ahead_distance(0.2)
-        self.pose = PoseStamped()
-        self.pose.pose.position.x = self.end[0][0]
-        self.pose.pose.position.y = self.end[0][1]
-        self.pose.pose.position.z = 0
+
+        self.target_global = None
+        self.listener = tf.TransformListener()
 
         self.pub_goal_marker = rospy.Publisher(
             "goal_marker", Marker, queue_size=1)
+
+        self.pub_target_marker = rospy.Publisher(
+            "target_marker", Marker, queue_size=1)
+
         self.pub_pid_goal = rospy.Publisher(
             "pid_control/goal", PoseStamped, queue_size=1)
-        self.req_path_srv = rospy.ServiceProxy("plan_service", GetPlan)
-        self.sub_pose = rospy.Subscriber(
-            "pose", PoseStamped, self.cb_pose, queue_size=1)
-        self.srv_topos = rospy.Service("to_position", GoToPos, self.to_pos)
 
-    def pub_marker(self, goal=Marker()):
+        self.req_path_srv = rospy.ServiceProxy("plan_service", GetPlan)
+
+        self.sub_goal = rospy.Subscriber(
+            "/move_base_simple/goal", PoseStamped, self.cb_goal, queue_size=1)
+
+        self.timer = rospy.Timer(rospy.Duration(0.2), self.to_pos)
+
+    def to_marker(self, goal=Marker(), frame=""):
         marker = Marker()
-        marker.header.frame_id = "map"
+        marker.header.frame_id = frame
         marker.header.stamp = rospy.Time.now()
-        marker.ns = "look ahead"
         marker.type = marker.SPHERE
         marker.action = marker.ADD
         marker.pose.orientation.w = 1
@@ -48,55 +52,72 @@ class Navigation(object):
         marker.scale.z = 0.1
         marker.color.a = 1.0
         marker.color.g = 1.0
-        self.pub_goal_marker.publish(marker)
+        return marker
 
-    def to_pos(self, req):
-        rospy.loginfo("%s : request pos %d" % (rospy.get_name(), req.pos))
-        res = GoToPosResponse()
+    def transform_pose(self, pose, target_frame, source_frame):
+        try:
+            (trans_c, rot_c) = self.listener.lookupTransform(
+                target_frame, source_frame, rospy.Time(0))
+        except (tf.Exception, tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            rospy.logerr("faile to catch tf %s 2 %s" %
+                         (target_frame, source_frame))
+            return
 
-        if req.pos < 0 or req.pos > 3:
-            rospy.logerr("%s : pos not exist" % rospy.get_name())
-            res.result = False
-            return res
-        if self.pose is None:
-            rospy.logerr("%s : no pose" % rospy.get_name())
-            res.result = False
-            return res
+        trans_mat = tf.transformations.translation_matrix(trans_c)
+        rot_mat = tf.transformations.quaternion_matrix(rot_c)
+        tran_mat = np.dot(trans_mat, rot_mat)
+
+        target_mat = np.array([[1, 0, 0, pose.position.x],
+                               [0, 1, 0, pose.position.y],
+                               [0, 0, 1, pose.position.z],
+                               [0, 0, 0, 1]])
+        target = np.dot(tran_mat, target_mat)
+
+        return target
+
+    def to_pos(self, event):
+
+        if self.target_global is None:
+            rospy.logerr("%s : no goal" % rospy.get_name())
+            return
 
         end_p = PoseStamped()
-        end_p.pose.position.x = self.end[req.pos][0]
-        end_p.pose.position.y = self.end[req.pos][1]
+        target = self.transform_pose(
+            self.target_global.pose, "base_footprint", "map")
+        end_p.pose.position.x = target[0, 3]
+        end_p.pose.position.y = target[1, 3]
         end_p.pose.position.z = 0
+
+        self.pub_target_marker.publish(self.to_marker(end_p, "base_footprint"))
+
+        start_p = PoseStamped()
+        start_p.pose.position.x = 1
+        start_p.pose.position.y = 0
+        start_p.pose.position.z = 0
+
         req_path = GetPlanRequest()
-        req_path.start = self.pose
+        req_path.start = start_p
         req_path.goal = end_p
+
         try:
             res_path = self.req_path_srv(req_path)
         except:
             rospy.logerr("%s : path request fail" % rospy.get_name())
-            res.result = False
-            return res
+            return
 
         self.pursuit.set_path(res_path.plan)
 
-        count = 0
-        while not rospy.is_shutdown():
-            rospy.sleep(0.2)
-            goal = self.pursuit.get_goal(self.pose)
-            if goal is None:
-                break
-            self.pub_marker(goal)
-            self.pub_pid_goal.publish(goal)
+        goal = self.pursuit.get_goal(start_p)
+        if goal is None:
+            rospy.logwarn("goal reached")
+            return
 
-            count += 1
-            if count > 5:
-                break
+        self.pub_goal_marker.publish(self.to_marker(goal, "map"))
 
-        res.result = True
-        return res
+        self.pub_pid_goal.publish(goal)
 
-    def cb_pose(self, msg):
-        self.pose = msg
+    def cb_goal(self, msg):
+        self.target_global = msg
 
 
 if __name__ == "__main__":
