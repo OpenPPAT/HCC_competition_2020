@@ -4,12 +4,15 @@ import os
 from std_msgs.msg import Int16, Float64
 from sensor_msgs.msg import Image, CompressedImage, Joy
 from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry, OccupancyGrid
+from tf2_msgs.msg import TFMessage
 import argparse
 
 
 # support forwad type
 class_type = {'Int16': Int16, 'Image': Image, 'Joy': Joy,
-              'CompressedImage': CompressedImage, 'Twist': Twist, 'Float64': Float64}
+              'CompressedImage': CompressedImage, 'Twist': Twist, 'Float64': Float64,
+              'Odometry': Odometry, 'OccupancyGrid':OccupancyGrid, 'TFMessage':TFMessage}
 
 
 class Bridge(object):

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <launch>
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find astar)/rviz/rviz.rviz" />
 
-    <node pkg="astar" type="pub_map.py" name="pub_map" output="screen" />
+    <node pkg="astar" type="pc2grid" name="pc2grid" output="screen">
+    </node>
 
-    <node pkg="astar" type="path_plan" name="plan" output="screen" />
+    <node pkg="astar" type="path_plan" name="plan" output="screen" >
+        <remap from="map" to="depthcam_map" />
+    </node>
 
     <node pkg="astar" type="navigate.py" name="navigate" output="screen" />
 
