@@ -58,7 +58,7 @@ void pub_arti_pose_ssd::callback(const subt_msgs::BoundingBoxes msg)
 pub_arti_pose_ssd::pub_arti_pose_ssd()
 {
 	NodeHandle nh;
-	sensor_msgs::CameraInfo::ConstPtr msg = ros::topic::waitForMessage<sensor_msgs::CameraInfo>("color/camera_info", ros::Duration());
+	sensor_msgs::CameraInfo::ConstPtr msg = ros::topic::waitForMessage<sensor_msgs::CameraInfo>("camera/color/camera_info", ros::Duration());
 	fx = msg->P[0];
 	fy = msg->P[5];
 	cx = msg->P[2];

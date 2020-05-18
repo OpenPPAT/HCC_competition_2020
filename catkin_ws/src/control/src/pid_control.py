@@ -9,6 +9,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from dynamic_reconfigure.server import Server
 from control.cfg import pos_PIDConfig, ang_PIDConfig
 from std_srvs.srv import SetBool, SetBoolResponse
+from nav_msgs.msg import Odometry
 from PID import PID_control
 
 
@@ -25,7 +26,7 @@ class Robot_PID():
 
         rospy.loginfo("[%s] Initializing " % rospy.get_name())
 
-        self.pub_cmd = rospy.Publisher("track_vel", Twist, queue_size=1)
+        self.pub_cmd = rospy.Publisher("cmd_vel", Twist, queue_size=1)
 
         self.pos_control = PID_control("Position")
         self.ang_control = PID_control("Angular")
@@ -37,8 +38,9 @@ class Robot_PID():
 
         self.sub_goal = rospy.Subscriber(
             "pid_control/goal", PoseStamped, self.cb_goal, queue_size=1)
+
         self.sub_pose = rospy.Subscriber(
-            'pose', PoseStamped, self.cb_pose, queue_size=1)
+            'pose', Odometry, self.cb_pose, queue_size=1)
 
     def cb_pose(self, msg):
         self.robot_pos = [msg.pose.pose.position.x, msg.pose.pose.position.y]
@@ -73,7 +75,7 @@ class Robot_PID():
         goal_angle = self.get_goal_angle(
             self.robot_yaw, self.robot_pos, self.goal)
 
-        os_output, ang_output = self.control(goal_distance, goal_angle)
+        pos_output, ang_output = self.control(goal_distance, goal_angle)
 
         cmd_msg = Twist()
         cmd_msg.linear.x = self.cmd_constarin(pos_output)

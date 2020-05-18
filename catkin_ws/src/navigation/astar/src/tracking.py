@@ -7,6 +7,7 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path, Odometry
 from nav_msgs.srv import GetPlan, GetPlanRequest, GetPlanResponse
 from visualization_msgs.msg import Marker
+from subt_msgs.msg import ArtifactPoseArray, ArtifactPose
 import tf
 import numpy as np
 
@@ -32,14 +33,17 @@ class Navigation(object):
 
         self.req_path_srv = rospy.ServiceProxy("plan_service", GetPlan)
 
+        self.sub_box = rospy.Subscriber(
+            "artifact_pose", PoseStamped, self.cb_pose, queue_size=1)
+
         self.sub_goal = rospy.Subscriber(
             "/move_base_simple/goal", PoseStamped, self.cb_goal, queue_size=1)
 
-        self.timer = rospy.Timer(rospy.Duration(0.2), self.to_pos)
+        self.timer = rospy.Timer(rospy.Duration(0.2), self.tracking)
 
-    def to_marker(self, goal=Marker(), frame=""):
+    def to_marker(self, goal, color=[0, 1, 0]):
         marker = Marker()
-        marker.header.frame_id = frame
+        marker.header.frame_id = goal.header.frame_id
         marker.header.stamp = rospy.Time.now()
         marker.type = marker.SPHERE
         marker.action = marker.ADD
@@ -51,7 +55,9 @@ class Navigation(object):
         marker.scale.y = 0.1
         marker.scale.z = 0.1
         marker.color.a = 1.0
-        marker.color.g = 1.0
+        marker.color.r = color[0]
+        marker.color.g = color[1]
+        marker.color.b = color[2]
         return marker
 
     def transform_pose(self, pose, target_frame, source_frame):
@@ -72,23 +78,30 @@ class Navigation(object):
                                [0, 0, 1, pose.position.z],
                                [0, 0, 0, 1]])
         target = np.dot(tran_mat, target_mat)
+        quat = tf.transformations.quaternion_from_matrix(target)
+        trans = tf.transformations.translation_from_matrix(target)
 
-        return target
+        t_pose = PoseStamped()
+        t_pose.header.frame_id = target_frame
+        t_pose.pose.position.x = trans[0]
+        t_pose.pose.position.y = trans[1]
+        t_pose.pose.position.z = trans[2]
+        t_pose.pose.orientation.x = quat[0]
+        t_pose.pose.orientation.y = quat[1]
+        t_pose.pose.orientation.z = quat[2]
+        t_pose.pose.orientation.w = quat[3]
 
-    def to_pos(self, event):
+        return t_pose
+
+    def tracking(self, event):
 
         if self.target_global is None:
             rospy.logerr("%s : no goal" % rospy.get_name())
             return
 
-        end_p = PoseStamped()
-        target = self.transform_pose(
+        end_p = self.transform_pose(
             self.target_global.pose, "base_footprint", "map")
-        end_p.pose.position.x = target[0, 3]
-        end_p.pose.position.y = target[1, 3]
-        end_p.pose.position.z = 0
-
-        self.pub_target_marker.publish(self.to_marker(end_p, "base_footprint"))
+        self.pub_target_marker.publish(self.to_marker(end_p, [0, 0, 1]))
 
         start_p = PoseStamped()
         start_p.pose.position.x = 1
@@ -112,9 +125,16 @@ class Navigation(object):
             rospy.logwarn("goal reached")
             return
 
-        self.pub_goal_marker.publish(self.to_marker(goal, "map"))
+        goal = self.transform_pose(goal.pose, "map", "base_footprint")
+        self.pub_goal_marker.publish(self.to_marker(goal))
 
         self.pub_pid_goal.publish(goal)
+
+    def cb_pose(self, msg):
+        for artifact in msg:
+            if artifact.Class == "back_pack":
+                self.target_global = self.transform_pose(
+                    artifact.pose, "map", "camera_color_optical_frame")
 
     def cb_goal(self, msg):
         self.target_global = msg
