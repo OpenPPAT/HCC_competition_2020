@@ -32,11 +32,11 @@ class bb_ssd_mobile_lite(object):
 		model = "v1"
 		r = rospkg.RosPack()
 		path = r.get_path('ssd_mobile_lite')
-		model_name = "Epoch-190-Loss-0.8932.pth"
+		model_name = "Epoch-630-Loss-0.4744.pth"
 		self.prob_threshold = 0.5
 		self.cv_bridge = CvBridge() 
 
-		self.labels = ['BACKGROUND', 'husky']
+		self.labels = ['BACKGROUND', 'backpack']
 		if model == "v2_lite":
 			self.network = create_mobilenetv2_ssd_lite(len(self.labels), is_test=True) 
 		elif model == "v1":
