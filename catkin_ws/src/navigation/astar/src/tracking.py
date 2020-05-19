@@ -17,7 +17,7 @@ class Navigation(object):
         rospy.loginfo("Initializing %s" % rospy.get_name())
 
         self.pursuit = PurePursuit()
-        self.pursuit.set_look_ahead_distance(0.2)
+        self.pursuit.set_look_ahead_distance(0.1)
 
         self.target_global = None
         self.listener = tf.TransformListener()
@@ -34,12 +34,12 @@ class Navigation(object):
         self.req_path_srv = rospy.ServiceProxy("plan_service", GetPlan)
 
         self.sub_box = rospy.Subscriber(
-            "artifact_pose", PoseStamped, self.cb_pose, queue_size=1)
+            "artifact_pose", ArtifactPoseArray, self.cb_pose, queue_size=1)
 
         self.sub_goal = rospy.Subscriber(
             "/move_base_simple/goal", PoseStamped, self.cb_goal, queue_size=1)
 
-        self.timer = rospy.Timer(rospy.Duration(0.2), self.tracking)
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.tracking)
 
     def to_marker(self, goal, color=[0, 1, 0]):
         marker = Marker()
@@ -104,7 +104,7 @@ class Navigation(object):
         self.pub_target_marker.publish(self.to_marker(end_p, [0, 0, 1]))
 
         start_p = PoseStamped()
-        start_p.pose.position.x = 1
+        start_p.pose.position.x = 0.3
         start_p.pose.position.y = 0
         start_p.pose.position.z = 0
 
@@ -131,10 +131,12 @@ class Navigation(object):
         self.pub_pid_goal.publish(goal)
 
     def cb_pose(self, msg):
-        for artifact in msg:
-            if artifact.Class == "back_pack":
+        for i in range(msg.count):
+            if msg.pose_array[i].Class == "backpack":
+                msg.pose_array[i].pose.position.x -= 0.3
                 self.target_global = self.transform_pose(
-                    artifact.pose, "map", "camera_color_optical_frame")
+                    msg.pose_array[i].pose, "map", "camera_link")
+                return
 
     def cb_goal(self, msg):
         self.target_global = msg

@@ -39,6 +39,10 @@ class PurePursuit(object):
             rospy.logwarn("purepursuit : no unfinished path")
             return
 
+        if np.linalg.norm(pose-unfinished[-1]) < 0.3:
+            rospy.loginfo("finish")
+            return
+
         goal = PoseStamped()
         goal.pose.position.x = unfinished[0][0]
         goal.pose.position.y = unfinished[0][1]

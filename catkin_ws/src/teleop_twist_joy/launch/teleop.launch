@@ -34,11 +34,12 @@
     <param name="bridge_to" value="/teleop/map" />
   </node>
 
-  <!-- <node pkg="bridge" type="bridge.py" name="bridge_tf_to_pc" args="$(arg wlan0)" output="screen">
+  <node pkg="bridge" type="bridge.py" name="bridge_tf_to_pc" args="$(arg wlan0)" output="screen">
     <param name="bridge_type" value="TFMessage" />
     <param name="bridge_from" value="/tf" />
     <param name="bridge_to" value="/tf" />
-  </node> -->
+  </node>
+  
 
 
 </launch>

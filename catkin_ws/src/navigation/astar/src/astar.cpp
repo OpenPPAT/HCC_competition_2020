@@ -70,7 +70,7 @@ bool Astar::initialize(Pose start, Pose end, OccupancyGrid map)
 
       nodes[idx].x = x;
       nodes[idx].y = y;
-      nodes[idx].is_obstacle = (int(map.data[x + y*nMapWidth]) > 20) ? true : false;
+      nodes[idx].is_obstacle = (int(map.data[x + y*nMapWidth]) > 10) ? true : false;
       nodes[idx].parent = nullptr;
 
       // neighbors
