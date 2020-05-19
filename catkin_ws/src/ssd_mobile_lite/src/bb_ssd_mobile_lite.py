@@ -116,7 +116,7 @@ class bb_ssd_mobile_lite(object):
 			bbox_out.header = rgb_data.header
 			bbox_out.depth = depth_data
 			bbox_out.count = len(obj_list)
-			bbox_out.camera = "camera_middle"
+			bbox_out.camera = "camera"
 			self.BoundingBoxes_pub.publish(bbox_out)
 
 	def predict(self, img):

@@ -60,7 +60,7 @@ bool PathPlan::cb_service(nav_msgs::GetPlanRequest &req, nav_msgs::GetPlanRespon
   }
 
   path.header.stamp = Time::now();
-  path.header.frame_id = "map";
+  path.header.frame_id = "base_footprint";
   pub_path.publish(path);
 
   res.plan = path;

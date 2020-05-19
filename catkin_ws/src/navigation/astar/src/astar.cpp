@@ -49,7 +49,6 @@ bool Astar::initialize(Pose start, Pose end, OccupancyGrid map)
     ROS_WARN("point outof bound");
     return false;
   }
-
   this->map = map;
   int nMapWidth = map.info.width;
   int nMapHeight = map.info.height;
@@ -58,39 +57,41 @@ bool Astar::initialize(Pose start, Pose end, OccupancyGrid map)
   {
     for (int y = 0; y < nMapHeight; y++)
     {
+      int idx = x * nMapHeight + y;
+
       if (x == ns.x && y == ns.y)
       {
-        this->start = &nodes[x + y * nMapHeight];
+        this->start = &nodes[idx];
       }
       else if (x == ne.x && y == ne.y)
       {
-        this->end = &nodes[x + y * nMapHeight];
+        this->end = &nodes[idx];
       }
 
-      nodes[x + y * nMapHeight].x = x;
-      nodes[x + y * nMapHeight].y = y;
-      nodes[x + y * nMapHeight].is_obstacle = (map.data[x + y * nMapHeight] < 50) ? false : true;
-      nodes[x + y * nMapHeight].parent = nullptr;
+      nodes[idx].x = x;
+      nodes[idx].y = y;
+      nodes[idx].is_obstacle = (int(map.data[x + y*nMapWidth]) > 20) ? true : false;
+      nodes[idx].parent = nullptr;
 
       // neighbors
       if (y > 0)
-        nodes[y * nMapWidth + x].neighbors.push_back(&nodes[(y - 1) * nMapWidth + (x + 0)]);
+        nodes[idx].neighbors.push_back(&nodes[(y - 1) + (x + 0) * nMapHeight]);
       if (y < nMapHeight - 1)
-        nodes[y * nMapWidth + x].neighbors.push_back(&nodes[(y + 1) * nMapWidth + (x + 0)]);
+        nodes[idx].neighbors.push_back(&nodes[(y + 1) + (x + 0) * nMapHeight]);
       if (x > 0)
-        nodes[y * nMapWidth + x].neighbors.push_back(&nodes[(y + 0) * nMapWidth + (x - 1)]);
+        nodes[idx].neighbors.push_back(&nodes[(y + 0) + (x - 1) * nMapHeight]);
       if (x < nMapWidth - 1)
-        nodes[y * nMapWidth + x].neighbors.push_back(&nodes[(y + 0) * nMapWidth + (x + 1)]);
+        nodes[idx].neighbors.push_back(&nodes[(y + 0) + (x + 1) * nMapHeight]);
 
       // diagonal neighbors
       if (y > 0 && x > 0)
-        nodes[y * nMapWidth + x].neighbors.push_back(&nodes[(y - 1) * nMapWidth + (x - 1)]);
+        nodes[idx].neighbors.push_back(&nodes[(y - 1) + (x - 1) * nMapHeight]);
       if (y < nMapHeight - 1 && x > 0)
-        nodes[y * nMapWidth + x].neighbors.push_back(&nodes[(y + 1) * nMapWidth + (x - 1)]);
+        nodes[idx].neighbors.push_back(&nodes[(y + 1) + (x - 1) * nMapHeight]);
       if (y > 0 && x < nMapWidth - 1)
-        nodes[y * nMapWidth + x].neighbors.push_back(&nodes[(y - 1) * nMapWidth + (x + 1)]);
+        nodes[idx].neighbors.push_back(&nodes[(y - 1) + (x + 1) * nMapHeight]);
       if (y < nMapHeight - 1 && x < nMapWidth - 1)
-        nodes[y * nMapWidth + x].neighbors.push_back(&nodes[(y + 1) * nMapWidth + (x + 1)]);
+        nodes[idx].neighbors.push_back(&nodes[(y + 1) + (x + 1) * nMapHeight]);
     }
   }
   return true;
